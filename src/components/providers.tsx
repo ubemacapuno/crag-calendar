@@ -3,20 +3,21 @@
 import { ReactNode } from "react";
 
 import { SessionProvider } from "next-auth/react";
-import { ThemeProvider as NextThemesProvider } from "next-themes";
+
+import { ThemeProvider } from "@/components/layout/theme-provider";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 export default function Providers({ children }: { children: ReactNode }) {
-  // const router = useRouter();
   return (
     <SessionProvider>
-      {/* <NextUIProvider
-        navigate={router.push}
-        className="flex h-full w-full flex-col"
-      > */}
-      <main className="flex h-full w-full flex-col">
-        <NextThemesProvider attribute="class">{children}</NextThemesProvider>
-      </main>
-      {/* </NextUIProvider> */}
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <TooltipProvider>{children}</TooltipProvider>
+      </ThemeProvider>
     </SessionProvider>
   );
 }

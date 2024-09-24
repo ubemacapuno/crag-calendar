@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
-import AppNavbar from "@/components/app-navbar";
+import Nav from "@/components/layout/nav";
 import Providers from "@/components/providers";
 
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Next.js Starter App",
+  title: "Next.js & Postgres Starter App",
   description: "A basic starter for next.js",
 };
 
@@ -26,10 +26,11 @@ export default function RootLayout({
       </head>
       <body className="h-screen w-screen">
         <Providers>
-          <AppNavbar />
-          <main className="flex-grow overflow-auto bg-[url(/light-bg.svg)] bg-cover dark:bg-[url(/dark-bg.svg)]">
-            <Suspense>{children}</Suspense>
-          </main>
+          <Nav>
+            <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+              <Suspense>{children}</Suspense>
+            </main>
+          </Nav>
         </Providers>
       </body>
     </html>

@@ -7,20 +7,11 @@ import requireAuth from "@/utils/require-auth";
 export default async function Profile() {
   await requireAuth();
   const session = (await getServerSession(options))!;
+  console.log("session", session);
 
   return (
     <Card className="mx-auto mt-4 max-w-md">
-      <CardContent>
-        {/* <User
-          name={session.user?.name}
-          description={session.user?.email}
-          avatarProps={{
-            showFallback: !session.user?.image,
-            src: session.user?.image || "",
-          }}
-        /> */}
-        <pr>{session.user?.name}</pr>
-      </CardContent>
+      <CardContent>{session?.user?.name}</CardContent>
     </Card>
   );
 }
