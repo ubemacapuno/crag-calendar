@@ -1,12 +1,10 @@
-# Next Start
+# Next PG Starter
 
-A basic Next.js starter.
+A basic Next.js starter with Postgres.
 
-- [Next Start](#next-start)
+- [Next PG Starter](#next-start)
   - [Stack](#stack)
-  - [Branches](#branches)
   - [Setup](#setup)
-  - [Resources](#resources)
 
 ## Stack
 
@@ -29,11 +27,9 @@ A basic Next.js starter.
   - [cross-env](https://www.npmjs.com/package/cross-env)
 - Styles / UI
   - [tailwindcss](https://www.npmjs.com/package/tailwindcss)
-  - [@nextui-org/react](https://www.npmjs.com/package/@nextui-org/react)
-    - [NextUI](https://nextui.org/docs/guide/introduction)
+  - [shadcn](https://ui.shadcn.com/docs/installation/next)
   - [next-themes](https://www.npmjs.com/package/next-themes)
-  - [@tabler/icons-react](https://www.npmjs.com/package/@tabler/icons-react)
-    - [Tabler Icon Search](https://tabler.io/icons)
+  - [lucide icons](https://lucide.dev/icons/)
 - Validation
   - [zod](https://www.npmjs.com/package/zod)
   - [@conform-to/zod](https://www.npmjs.com/package/@conform-to/zod)
@@ -51,21 +47,6 @@ A basic Next.js starter.
   - [@auth/drizzle-adapter](https://www.npmjs.com/package/@auth/drizzle-adapter)
     - [Auth.js Drizzle Adapter Documentation](https://authjs.dev/getting-started/adapters/drizzle)
 
-## Branches
-
-The main branch contains the entire setup. The following branches build on each other from top to bottom:
-
-- [base](https://github.com/w3cj/next-start/tree/base)
-  - eslint / prettier settings
-- [nextui](https://github.com/w3cj/next-start/tree/nextui)
-  - layout / styles
-  - dark / light theme toggle
-- [typesafe-env](https://github.com/w3cj/next-start/tree/typesafe-env)
-  - typesafe environment variables
-- [next-auth](https://github.com/w3cj/next-start/tree/next-auth)
-  - google oauth with no database
-- [drizzle](https://github.com/w3cj/next-start/tree/drizzle) / [main](https://github.com/w3cj/next-start)
-  - basic drizzle schema with users / accounts / sessions
 
 ## Setup
 
@@ -106,9 +87,3 @@ pnpm run db:migrate
 ```sh
 pnpm run dev
 ```
-
-## Resources
-
-- [Next.js Discord FAQs](https://nextjs-faq.com/)
-  - ["Module not found" error on deployment but build works fine locally](https://nextjs-faq.com/module-not-found-due-to-case-sensitivity)
-- [Bulletproof React](https://github.com/alan2207/bulletproof-react)
