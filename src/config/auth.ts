@@ -9,6 +9,7 @@ const options: NextAuthOptions = {
   pages: {
     signIn: "/",
   },
+  // TODO: Drizzle adapter is for NextAuth v5, but we're using v4 - remove lint ignore when ready
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-expect-error
   adapter: DrizzleAdapter(db),

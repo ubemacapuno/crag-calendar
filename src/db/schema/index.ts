@@ -1,4 +1,5 @@
 export { default as accounts } from "./accounts";
+export { default as climbs, climbsRelations } from "./climbs";
 export {
   default as guestbookEntries,
   guestbookEntriesRelations,
