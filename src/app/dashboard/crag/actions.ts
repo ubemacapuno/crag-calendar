@@ -8,18 +8,13 @@ import { getServerSession } from "next-auth";
 
 import options from "@/config/auth";
 import db from "@/db";
-import guestbookEntries, {
-  InsertGuestbookEntrySchema,
-} from "@/db/schema/guestbook-entries";
+import climbs, { InsertClimbSchema } from "@/db/schema/climbs";
 import requireAuth from "@/utils/require-auth";
 
-export async function createGuestbookEntry(
-  prevState: unknown,
-  formData: FormData
-) {
+export async function createClimbEntry(prevState: unknown, formData: FormData) {
   await requireAuth();
   const submission = parseWithZod(formData, {
-    schema: InsertGuestbookEntrySchema,
+    schema: InsertClimbSchema,
   });
 
   if (submission.status !== "success") {
@@ -28,11 +23,13 @@ export async function createGuestbookEntry(
 
   const session = (await getServerSession(options))!;
 
-  await db.insert(guestbookEntries).values({
+  await db.insert(climbs).values({
     userId: session.user.id,
-    message: submission.value.message,
+    grade: submission.value.grade,
+    // Add date field from the form data
+    date: new Date(formData.get("date") as string),
   });
 
-  revalidatePath("/guestbook");
-  redirect("/guestbook");
+  revalidatePath("/dashboard/crag");
+  redirect("/dashboard/crag");
 }
