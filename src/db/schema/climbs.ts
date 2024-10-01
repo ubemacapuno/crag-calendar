@@ -1,11 +1,11 @@
 import { relations } from "drizzle-orm";
-import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { jsonb, pgTable, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 import users from "./users";
 
-const vScaleBoulderingGrades = [
+export const vScaleBoulderingGrades = [
   "V0-",
   "V0",
   "V1",
@@ -36,7 +36,8 @@ const climbs = pgTable("climb", {
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
-  grades: text("grades").notNull().$type<string[]>(), // Store as JSON array
+  date: timestamp("date").notNull(), // Add this line
+  grades: jsonb("grades").notNull().$type<string[]>(), // Store as JSON array
 });
 
 export const climbsRelations = relations(climbs, ({ one }) => ({
@@ -52,6 +53,12 @@ export const InsertClimbSchema = createInsertSchema(climbs, {
   id: true,
   userId: true,
   createdAt: true,
+});
+
+// New schema for single grade input
+export const SingleGradeInputSchema = z.object({
+  grade: z.enum(vScaleBoulderingGrades),
+  date: z.string().transform((str) => new Date(str)),
 });
 
 export default climbs;

@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
-import { format } from "date-fns";
+import { format, startOfDay } from "date-fns";
+// Import startOfDay
+import { Trash2 } from "lucide-react";
 import { useFormState } from "react-dom";
 
 import { Button } from "@/components/ui/button";
@@ -15,14 +17,26 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { InsertClimbSchema } from "@/db/schema/climbs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { InsertClimbSchema, vScaleBoulderingGrades } from "@/db/schema/climbs";
 
-import { createClimbEntry } from "./actions";
+import {
+  createClimbEntry,
+  getClimbsForDate,
+  removeClimbGrade,
+} from "./actions";
 
 export default function CragClient() {
   const [selectedDay, setSelectedDay] = useState<Date | undefined>(undefined);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [climbGrades, setClimbGrades] = useState<string[]>([]);
+  const [addError, setAddError] = useState<string | null>(null);
 
   const [lastResult, action] = useFormState(createClimbEntry, undefined);
   const [form, fields] = useForm({
@@ -34,9 +48,59 @@ export default function CragClient() {
     shouldRevalidate: "onInput",
   });
 
-  const handleDayClick = (day: Date) => {
-    setSelectedDay(day);
-    setIsModalOpen(true);
+  const handleDayClick = useCallback(async (day: Date | undefined) => {
+    if (!day) return;
+
+    const normalizedDay = startOfDay(day); // Normalize the date
+    setSelectedDay(normalizedDay);
+    setAddError(null);
+
+    try {
+      const grades = await getClimbsForDate(normalizedDay);
+      setClimbGrades(Array.isArray(grades) ? grades : []);
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error("Error fetching grades:", error);
+      setClimbGrades([]);
+      setAddError("Failed to fetch grades. Please try again.");
+    }
+  }, []);
+
+  const handleRemoveGrade = async (index: number) => {
+    if (selectedDay) {
+      try {
+        await removeClimbGrade(selectedDay, index);
+        await handleDayClick(selectedDay); // Refetch grades after removal
+      } catch (error) {
+        console.error("Error removing grade:", error);
+        setAddError("Failed to remove grade. Please try again.");
+      }
+    }
+  };
+
+  const handleAddGrade = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setAddError(null);
+
+    if (!selectedDay) {
+      setAddError("Please select a date first");
+      return;
+    }
+
+    const formData = new FormData(event.currentTarget);
+    formData.set("date", format(selectedDay, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"));
+
+    try {
+      const result = await action(formData);
+      if (result && result.status === "error") {
+        setAddError(result.message);
+      } else {
+        await handleDayClick(selectedDay); // Refetch grades after addition
+      }
+    } catch (error) {
+      console.error("Error adding grade:", error);
+      setAddError("Failed to add grade. Please try again.");
+    }
   };
 
   return (
@@ -48,32 +112,63 @@ export default function CragClient() {
         className="rounded-md border shadow"
       />
 
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+      <Dialog
+        open={isModalOpen}
+        onOpenChange={(open) => {
+          setIsModalOpen(open);
+          if (!open) {
+            // When closing the modal, reset the selected day
+            setSelectedDay(undefined);
+            setClimbGrades([]);
+          }
+        }}
+      >
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>
-              Add Climb for {selectedDay && format(selectedDay, "MMMM d, yyyy")}
+              Climbs for {selectedDay && format(selectedDay, "MMMM d, yyyy")}
             </DialogTitle>
           </DialogHeader>
+          <div className="mt-4">
+            <h3 className="mb-2 font-semibold">Logged Grades:</h3>
+            {climbGrades.length > 0 ? (
+              <ul className="space-y-2">
+                {climbGrades.map((grade, index) => (
+                  <li key={index} className="flex items-center justify-between">
+                    <span>{grade}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleRemoveGrade(index)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No grades logged for this day.</p>
+            )}
+          </div>
           <form
             id={form.id}
-            onSubmit={form.onSubmit}
-            action={action}
-            noValidate
+            onSubmit={handleAddGrade}
             className="mt-4 flex flex-col gap-2"
           >
-            <Input
-              type="hidden"
-              name="date"
-              value={selectedDay ? selectedDay.toISOString() : ""}
-            />
-            <Input
-              key={fields.grade.key}
-              name={fields.grade.name}
-              placeholder="Enter climb grade (e.g., V5)"
-              className="w-full"
-            />
-            <Button type="submit">Add Climb</Button>
+            <Select name={fields.grade.name}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select grade" />
+              </SelectTrigger>
+              <SelectContent>
+                {vScaleBoulderingGrades.map((grade) => (
+                  <SelectItem key={grade} value={grade}>
+                    {grade}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button type="submit">Add Grade</Button>
+            {addError && <div className="text-red-500">{addError}</div>}
           </form>
         </DialogContent>
       </Dialog>

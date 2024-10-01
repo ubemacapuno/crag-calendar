@@ -17,7 +17,8 @@ CREATE TABLE IF NOT EXISTS "climb" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"userId" uuid NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	"grade" varchar(4) NOT NULL
+	"date" timestamp NOT NULL,
+	"grades" text NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "guestbook_entries" (

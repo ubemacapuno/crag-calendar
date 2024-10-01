@@ -1,5 +1,5 @@
 {
-  "id": "ce5a22d1-efab-456e-abdd-8d70d9e6a7ba",
+  "id": "4b54a557-aff7-48d1-896e-0e045084d2cd",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -126,9 +126,15 @@
           "notNull": true,
           "default": "now()"
         },
-        "grade": {
-          "name": "grade",
-          "type": "varchar(4)",
+        "date": {
+          "name": "date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "grades": {
+          "name": "grades",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         }
