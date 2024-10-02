@@ -5,7 +5,6 @@ import { useCallback, useState } from "react";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { format, startOfDay } from "date-fns";
-// Import startOfDay
 import { Trash2 } from "lucide-react";
 import { useFormState } from "react-dom";
 
@@ -24,7 +23,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { InsertClimbSchema, vScaleBoulderingGrades } from "@/db/schema/climbs";
+import { InsertClimbSchema } from "@/db/schema/climbs";
+import { vScaleBoulderingGrades } from "@/db/schema/grades";
 
 import {
   createClimbEntry,
@@ -51,13 +51,13 @@ export default function CragClient() {
   const handleDayClick = useCallback(async (day: Date | undefined) => {
     if (!day) return;
 
-    const normalizedDay = startOfDay(day); // Normalize the date
+    const normalizedDay = startOfDay(day);
     setSelectedDay(normalizedDay);
     setAddError(null);
 
     try {
       const grades = await getClimbsForDate(normalizedDay);
-      setClimbGrades(Array.isArray(grades) ? grades : []);
+      setClimbGrades(grades);
       setIsModalOpen(true);
     } catch (error) {
       console.error("Error fetching grades:", error);
@@ -66,10 +66,10 @@ export default function CragClient() {
     }
   }, []);
 
-  const handleRemoveGrade = async (index: number) => {
+  const handleRemoveGrade = async (grade: string) => {
     if (selectedDay) {
       try {
-        await removeClimbGrade(selectedDay, index);
+        await removeClimbGrade(selectedDay, grade);
         await handleDayClick(selectedDay); // Refetch grades after removal
       } catch (error) {
         console.error("Error removing grade:", error);
@@ -89,6 +89,8 @@ export default function CragClient() {
 
     const formData = new FormData(event.currentTarget);
     formData.set("date", format(selectedDay, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"));
+
+    console.log("Form data:", Object.fromEntries(formData));
 
     try {
       const result = await action(formData);
@@ -139,7 +141,7 @@ export default function CragClient() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleRemoveGrade(index)}
+                      onClick={() => handleRemoveGrade(grade)}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -155,7 +157,7 @@ export default function CragClient() {
             onSubmit={handleAddGrade}
             className="mt-4 flex flex-col gap-2"
           >
-            <Select name={fields.grade.name}>
+            <Select name="grade">
               <SelectTrigger>
                 <SelectValue placeholder="Select grade" />
               </SelectTrigger>
