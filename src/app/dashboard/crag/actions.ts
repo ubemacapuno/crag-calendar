@@ -27,6 +27,7 @@ export async function getClimbsForDate(date: Date) {
       .from(climbs)
       .where(
         and(
+          // grab the climbs for the current user and for the date range
           eq(climbs.userId, session.user.id),
           gte(climbs.date, dayStart),
           lte(climbs.date, dayEnd)
@@ -47,19 +48,11 @@ export async function removeClimbGrade(date: Date, index: number) {
   const session = (await getServerSession(options))!;
   const startOfDay = new Date(date);
   startOfDay.setHours(0, 0, 0, 0);
-  const endOfDay = new Date(date);
-  endOfDay.setHours(23, 59, 59, 999);
 
   const climbEntry = await db
     .select()
     .from(climbs)
-    .where(
-      and(
-        eq(climbs.userId, session.user.id),
-        gte(climbs.createdAt, startOfDay),
-        lte(climbs.createdAt, endOfDay)
-      )
-    )
+    .where(and(eq(climbs.userId, session.user.id), eq(climbs.date, startOfDay)))
     .limit(1);
 
   if (climbEntry.length > 0) {

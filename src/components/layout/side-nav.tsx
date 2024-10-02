@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 
-import { Book, Home, Package2, Settings } from "lucide-react";
+import { Home, Mountain, Package2, Settings } from "lucide-react";
 
 import { APP_NAME } from "@/app/constants";
 
@@ -15,9 +15,9 @@ export const routes = [
     icon: <Home className="h-5 w-5" />,
   },
   {
-    label: "Guestbook",
-    href: "/dashboard/guestbook",
-    icon: <Book className="h-5 w-5" />,
+    label: "Crag Calendar",
+    href: "/dashboard/crag",
+    icon: <Mountain className="h-5 w-5" />,
   },
 ];
 
