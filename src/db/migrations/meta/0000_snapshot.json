@@ -1,5 +1,5 @@
 {
-  "id": "4b54a557-aff7-48d1-896e-0e045084d2cd",
+  "id": "20609569-8d32-4109-b29c-c61cc48e2177",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -102,6 +102,55 @@
       },
       "uniqueConstraints": {}
     },
+    "public.climb_grades": {
+      "name": "climb_grades",
+      "schema": "",
+      "columns": {
+        "climb_id": {
+          "name": "climb_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "grade_id": {
+          "name": "grade_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "climb_grades_climb_id_climb_id_fk": {
+          "name": "climb_grades_climb_id_climb_id_fk",
+          "tableFrom": "climb_grades",
+          "tableTo": "climb",
+          "columnsFrom": [
+            "climb_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "climb_grades_grade_id_grade_id_fk": {
+          "name": "climb_grades_grade_id_grade_id_fk",
+          "tableFrom": "climb_grades",
+          "tableTo": "grade",
+          "columnsFrom": [
+            "grade_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "public.climb": {
       "name": "climb",
       "schema": "",
@@ -131,12 +180,6 @@
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true
-        },
-        "grades": {
-          "name": "grades",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
         }
       },
       "indexes": {},
@@ -157,6 +200,37 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
+    },
+    "public.grade": {
+      "name": "grade",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(5)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "grade_name_unique": {
+          "name": "grade_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name"
+          ]
+        }
+      }
     },
     "public.guestbook_entries": {
       "name": "guestbook_entries",
