@@ -1,8 +1,6 @@
 import Link from "next/link";
 
-import { Package2, PanelLeft, Settings } from "lucide-react";
-
-import { APP_NAME } from "@/app/constants";
+import { PanelLeft, Settings } from "lucide-react";
 
 import { Button } from "../ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
@@ -19,13 +17,15 @@ const MobileNav = () => {
       </SheetTrigger>
       <SheetContent side="left" className="sm:max-w-xs">
         <nav className="grid gap-6 text-lg font-medium">
+          {/* 
+          // TODO: Add back in if need shopify integration ?
           <Link
             href="#"
             className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
           >
             <Package2 className="h-5 w-5 transition-all group-hover:scale-110" />
             <span className="sr-only">{APP_NAME}</span>
-          </Link>
+          </Link> */}
           {routes.map(({ label, href, icon }) => (
             <Link
               key={href}

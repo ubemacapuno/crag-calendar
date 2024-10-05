@@ -1,30 +1,16 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import React, { useCallback, useState } from "react";
 
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
-import { format, startOfDay } from "date-fns";
-import { Trash2 } from "lucide-react";
+import { format, isFuture, startOfDay } from "date-fns";
+// Add isFuture import
 import { useFormState } from "react-dom";
 
-import { Button } from "@/components/ui/button";
+import { ClimbDialog } from "@/components/climb-dialog";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { InsertClimbSchema } from "@/db/schema/climbs";
-import { vScaleBoulderingGrades } from "@/db/schema/grades";
 
 import {
   createClimbEntry,
@@ -48,7 +34,14 @@ export default function CragClient() {
     shouldRevalidate: "onInput",
   });
 
+  // Function to disable future dates
+  const disableFutureDates = (date: Date) => {
+    return isFuture(date);
+  };
+
   const handleDayClick = useCallback(async (day: Date | undefined) => {
+    if (!day || isFuture(day)) return; // Prevent clicks on future dates
+
     if (!day) return;
 
     const normalizedDay = startOfDay(day);
@@ -111,69 +104,26 @@ export default function CragClient() {
         mode="single"
         selected={selectedDay}
         onSelect={handleDayClick}
+        disabled={disableFutureDates}
         className="rounded-md border shadow"
       />
 
-      <Dialog
-        open={isModalOpen}
+      <ClimbDialog
+        isOpen={isModalOpen}
         onOpenChange={(open) => {
           setIsModalOpen(open);
           if (!open) {
-            // When closing the modal, reset the selected day
             setSelectedDay(undefined);
             setClimbGrades([]);
           }
         }}
-      >
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>
-              Climbs for {selectedDay && format(selectedDay, "MMMM d, yyyy")}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="mt-4">
-            <h3 className="mb-2 font-semibold">Logged Grades:</h3>
-            {climbGrades.length > 0 ? (
-              <ul className="space-y-2">
-                {climbGrades.map((grade, index) => (
-                  <li key={index} className="flex items-center justify-between">
-                    <span>{grade}</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveGrade(grade)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p>No grades logged for this day.</p>
-            )}
-          </div>
-          <form
-            id={form.id}
-            onSubmit={handleAddGrade}
-            className="mt-4 flex flex-col gap-2"
-          >
-            <Select name="grade">
-              <SelectTrigger>
-                <SelectValue placeholder="Select grade" />
-              </SelectTrigger>
-              <SelectContent>
-                {vScaleBoulderingGrades.map((grade) => (
-                  <SelectItem key={grade} value={grade}>
-                    {grade}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button type="submit">Add Grade</Button>
-            {addError && <div className="text-red-500">{addError}</div>}
-          </form>
-        </DialogContent>
-      </Dialog>
+        selectedDay={selectedDay}
+        climbGrades={climbGrades}
+        addError={addError}
+        handleRemoveGrade={handleRemoveGrade}
+        handleAddGrade={handleAddGrade}
+        formId={form.id}
+      />
     </div>
   );
 }
