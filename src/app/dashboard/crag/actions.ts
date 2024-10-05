@@ -11,7 +11,7 @@ import options from "@/config/auth";
 import db from "@/db";
 import climbGrades from "@/db/schema/climb-grades";
 import climbs, { SingleGradeInputSchema } from "@/db/schema/climbs";
-import grades from "@/db/schema/grades";
+import grades, { vScaleBoulderingGrades } from "@/db/schema/grades";
 import requireAuth from "@/utils/require-auth";
 
 export async function getClimbsForDate(date: Date) {
@@ -38,7 +38,16 @@ export async function getClimbsForDate(date: Date) {
         )
       );
 
-    return result.map((r) => r.gradeName).filter(Boolean);
+    const gradeNames = result
+      .map((r) => r.gradeName)
+      .filter(Boolean) as string[];
+
+    // Sort the grades based on their index in vScaleBoulderingGrades
+    return gradeNames.sort(
+      (a, b) =>
+        vScaleBoulderingGrades.indexOf(a as any) -
+        vScaleBoulderingGrades.indexOf(b as any)
+    );
   } catch (error) {
     console.error("Error fetching climbs:", error);
     return [];
