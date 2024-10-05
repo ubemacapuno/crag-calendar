@@ -15,7 +15,7 @@ export function GradeCircle({ grade }: GradeCircleProps) {
     }
 
     // Use sine functions to create smooth color transitions
-    const frequency = 0.3; // Adjust this to change the rate of color change
+    const frequency = 0.3;
     const r = Math.sin(frequency * value + 0) * 127 + 128;
     const g = Math.sin(frequency * value + 2) * 127 + 128;
     const b = Math.sin(frequency * value + 4) * 127 + 128;
