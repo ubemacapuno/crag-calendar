@@ -35,8 +35,9 @@ export const InsertClimbingSessionSchema = createInsertSchema(
 });
 
 export const SingleGradeInputSchema = z.object({
+  date: z.coerce.date(),
   grade: z.string(),
-  date: z.string().transform((str) => new Date(str)),
+  description: z.string().optional(),
 });
 
 export default climbingSessions;

@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 
 import { format } from "date-fns";
 import { Trash2 } from "lucide-react";
 
 import { AlertDestructive } from "@/components/alert-destructive";
+import { EditableDescription } from "@/components/editable-description";
 import { GradeCircle } from "@/components/grade-circle";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,11 +26,17 @@ interface ClimbDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   selectedDay: Date | undefined;
-  climbs: string[];
+  climbs: Array<{ id: string; gradeName: string; description: string | null }>;
   addError: string | null;
-  handleRemoveGrade: (grade: string) => Promise<void>;
-  handleAddGrade: (event: React.FormEvent<HTMLFormElement>) => Promise<void>;
+  handleRemoveGrade: (climbId: string) => Promise<void>;
+  handleAddGrade: (
+    event: React.FormEvent<HTMLFormElement>,
+    grade: string,
+    description: string
+  ) => Promise<void>;
   formId: string;
+  handleUpdateDescription: (climbId: string, newDescription: string) => void;
+  isSubmitting: boolean;
 }
 
 export function ClimbDialog({
@@ -41,8 +48,18 @@ export function ClimbDialog({
   handleRemoveGrade,
   handleAddGrade,
   formId,
+  handleUpdateDescription,
+  isSubmitting,
 }: ClimbDialogProps) {
   const today = new Date();
+  const [selectedGrade, setSelectedGrade] = useState<string>("V0-");
+  const [description, setDescription] = useState<string>("");
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    handleAddGrade(event, selectedGrade, description);
+    setDescription(""); // Clear description after submission
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -62,16 +79,28 @@ export function ClimbDialog({
                   <h3 className="mb-2 font-semibold">Logged Grades:</h3>
                   {climbs.length > 0 ? (
                     <ul className="space-y-2">
-                      {climbs.map((grade, index) => (
+                      {climbs.map((climb) => (
                         <li
-                          key={index}
+                          key={climb.id}
                           className="flex items-center justify-between"
                         >
-                          <GradeCircle grade={grade} />
+                          <div className="flex items-center">
+                            <GradeCircle grade={climb.gradeName} />
+                            <EditableDescription
+                              initialDescription={climb.description}
+                              onSave={(newDescription) =>
+                                handleUpdateDescription(
+                                  climb.id,
+                                  newDescription
+                                )
+                              }
+                              onCancel={() => {}} // You can add any cancel logic here if needed
+                            />
+                          </div>
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleRemoveGrade(grade)}
+                            onClick={() => handleRemoveGrade(climb.id)}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -85,12 +114,15 @@ export function ClimbDialog({
 
                 <form
                   id={formId}
-                  onSubmit={handleAddGrade}
+                  onSubmit={handleSubmit}
                   className="mt-4 flex flex-col gap-2"
                 >
-                  <Select name="grade">
+                  <Select
+                    value={selectedGrade}
+                    onValueChange={setSelectedGrade}
+                  >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select grade" />
+                      <SelectValue placeholder="Select a grade" />
                     </SelectTrigger>
                     <SelectContent>
                       {vScaleBoulderingGrades.map((grade) => (
@@ -100,7 +132,16 @@ export function ClimbDialog({
                       ))}
                     </SelectContent>
                   </Select>
-                  <Button type="submit">Add Grade</Button>
+                  <input
+                    type="text"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Description (optional)"
+                    className="rounded-md border p-2"
+                  />
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? "Adding..." : "Add Grade"}
+                  </Button>
                   {addError && <div className="text-red-500">{addError}</div>}
                 </form>
               </>

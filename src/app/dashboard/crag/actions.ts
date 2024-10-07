@@ -16,6 +16,8 @@ import climbs from "@/db/schema/climbs";
 import grades, { vScaleBoulderingGrades } from "@/db/schema/grades";
 import requireAuth from "@/utils/require-auth";
 
+// TODO: Remove logs when done debugging
+
 export async function getclimbingSessionsForDate(date: Date) {
   await requireAuth();
   const session = (await getServerSession(options))!;
@@ -23,11 +25,15 @@ export async function getclimbingSessionsForDate(date: Date) {
   const dayStart = startOfDay(date);
   const dayEnd = endOfDay(date);
 
+  console.log("Fetching climbs for date:", date);
+
   try {
     const result = await db
       .select({
+        id: climbs.id,
         climbId: climbingSessions.id,
         gradeName: grades.name,
+        description: climbs.description,
       })
       .from(climbingSessions)
       .leftJoin(climbs, eq(climbingSessions.id, climbs.climbId))
@@ -40,58 +46,35 @@ export async function getclimbingSessionsForDate(date: Date) {
         )
       );
 
-    const gradeNames = result
-      .map((r) => r.gradeName)
-      .filter(Boolean) as string[];
+    console.log("Raw fetched climbs:", result);
 
-    // Sort the grades based on their index in vScaleBoulderingGrades
-    return gradeNames.sort(
-      (a, b) =>
-        vScaleBoulderingGrades.indexOf(a as any) -
-        vScaleBoulderingGrades.indexOf(b as any)
-    );
+    const filteredResult = result.filter((r) => r.gradeName);
+    console.log("Filtered climbs:", filteredResult);
+
+    return filteredResult.sort((a, b) => {
+      const gradeComparison =
+        vScaleBoulderingGrades.indexOf(a.gradeName as any) -
+        vScaleBoulderingGrades.indexOf(b.gradeName as any);
+      if (gradeComparison === 0) {
+        // If grades are the same, sort by description
+        return (a.description || "").localeCompare(b.description || "");
+      }
+      return gradeComparison;
+    });
   } catch (error) {
     console.error("Error fetching climbingSessions:", error);
     return [];
   }
 }
 
-export async function removeClimbGrade(date: Date, gradeName: string) {
+export async function removeClimbGrade(date: Date, climbId: string) {
   await requireAuth();
   const session = (await getServerSession(options))!;
   const startOfDay = new Date(date);
   startOfDay.setHours(0, 0, 0, 0);
 
   try {
-    const climb = await db
-      .select({ id: climbingSessions.id })
-      .from(climbingSessions)
-      .where(
-        and(
-          eq(climbingSessions.userId, session.user.id),
-          eq(climbingSessions.date, startOfDay)
-        )
-      )
-      .limit(1);
-
-    if (climb.length > 0) {
-      const grade = await db
-        .select({ id: grades.id })
-        .from(grades)
-        .where(eq(grades.name, gradeName))
-        .limit(1);
-
-      if (grade.length > 0) {
-        await db
-          .delete(climbs)
-          .where(
-            and(
-              eq(climbs.climbId, climb[0].id),
-              eq(climbs.gradeId, grade[0].id)
-            )
-          );
-      }
-    }
+    await db.delete(climbs).where(eq(climbs.id, climbId));
 
     revalidatePath("/dashboard/crag");
   } catch (error) {
@@ -101,10 +84,13 @@ export async function removeClimbGrade(date: Date, gradeName: string) {
 }
 
 export async function createClimbEntry(prevState: unknown, formData: FormData) {
+  console.log(
+    "createClimbEntry called with formData:",
+    Object.fromEntries(formData)
+  );
+
   await requireAuth();
   const session = (await getServerSession(options))!;
-
-  console.log("Received form data:", Object.fromEntries(formData));
 
   const submission = parseWithZod(formData, {
     schema: SingleGradeInputSchema,
@@ -115,14 +101,19 @@ export async function createClimbEntry(prevState: unknown, formData: FormData) {
     return submission.reply();
   }
 
-  const { date, grade } = submission.value;
+  const { date, grade, description } = submission.value;
 
-  console.log("Parsed submission:", { date, grade });
+  if (!grade || grade === "undefined") {
+    return {
+      status: "error",
+      message: "Grade is required",
+    };
+  }
+
+  console.log("Parsed submission:", { date, grade, description });
 
   try {
-    console.log("Attempting to create climb entry:", { date, grade });
-
-    // First, find or create the grade
+    // Find or create the grade
     let gradeId: string;
     const existingGrade = await db
       .select({ id: grades.id })
@@ -132,20 +123,17 @@ export async function createClimbEntry(prevState: unknown, formData: FormData) {
 
     if (existingGrade.length > 0) {
       gradeId = existingGrade[0].id;
-      console.log("Using existing grade:", gradeId);
     } else {
       const insertGradeResult = await db
         .insert(grades)
-        .values({
-          name: grade,
-        })
+        .values({ name: grade })
         .returning({ id: grades.id });
       gradeId = insertGradeResult[0].id;
-      console.log("Created new grade:", gradeId);
     }
 
-    // Now, find or create the climb
-    const existingClimb = await db
+    // Find or create the climbing session
+    let climbingSessionId: string;
+    const existingSession = await db
       .select({ id: climbingSessions.id })
       .from(climbingSessions)
       .where(
@@ -156,39 +144,39 @@ export async function createClimbEntry(prevState: unknown, formData: FormData) {
       )
       .limit(1);
 
-    let climbId: string;
-
-    if (existingClimb.length > 0) {
-      climbId = existingClimb[0].id;
-      console.log("Using existing climb:", climbId);
+    if (existingSession.length > 0) {
+      climbingSessionId = existingSession[0].id;
     } else {
-      const insertClimbResult = await db
+      const insertSessionResult = await db
         .insert(climbingSessions)
         .values({
           userId: session.user.id,
           date: date,
         })
         .returning({ id: climbingSessions.id });
-      climbId = insertClimbResult[0].id;
-      console.log("Created new climb:", climbId);
+      climbingSessionId = insertSessionResult[0].id;
     }
 
-    // Finally, create the climb-grade association
-    const insertClimbGradeResult = await db
+    // Always create a new climb entry
+    const insertClimbResult = await db
       .insert(climbs)
       .values({
-        climbId: climbId,
+        climbId: climbingSessionId,
         gradeId: gradeId,
+        description: description || null,
       })
       .returning({
+        id: climbs.id,
         climbId: climbs.climbId,
         gradeId: climbs.gradeId,
+        description: climbs.description,
       });
 
-    console.log("Inserted climb grade:", insertClimbGradeResult);
+    const newClimb = insertClimbResult[0];
+    console.log("New climb created:", newClimb);
 
     revalidatePath("/dashboard/crag");
-    return { status: "success" };
+    return { status: "success", data: newClimb };
   } catch (error) {
     console.error("Error in createClimbEntry:", error);
     return {
@@ -213,5 +201,24 @@ export async function getTotalLoggedClimbs() {
   } catch (error) {
     console.error("Error fetching total logged climbs:", error);
     return 0;
+  }
+}
+
+export async function updateClimbDescription(
+  climbId: string,
+  newDescription: string
+) {
+  await requireAuth();
+
+  try {
+    await db
+      .update(climbs)
+      .set({ description: newDescription })
+      .where(eq(climbs.id, climbId));
+
+    revalidatePath("/dashboard/crag");
+  } catch (error) {
+    console.error("Error updating climb description:", error);
+    throw error;
   }
 }

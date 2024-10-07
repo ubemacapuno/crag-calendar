@@ -1,5 +1,5 @@
 {
-  "id": "6953c82e-82be-4cc7-a19f-6afa67037ef3",
+  "id": "b3dc39b2-043a-4134-a936-fa173636ea54",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -156,6 +156,13 @@
       "name": "climbs",
       "schema": "",
       "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
         "climb_id": {
           "name": "climb_id",
           "type": "uuid",
@@ -167,6 +174,12 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},

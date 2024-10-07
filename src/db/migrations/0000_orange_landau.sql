@@ -21,8 +21,10 @@ CREATE TABLE IF NOT EXISTS "climbing_session" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "climbs" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"climb_id" uuid NOT NULL,
-	"grade_id" uuid NOT NULL
+	"grade_id" uuid NOT NULL,
+	"description" text
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "grade" (
