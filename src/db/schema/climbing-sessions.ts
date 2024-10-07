@@ -3,7 +3,7 @@ import { pgTable, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-import climbGrades from "./climb-grades";
+import climbs from "./climbs";
 import users from "./users";
 
 const climbingSessions = pgTable("climbing_session", {
@@ -22,7 +22,7 @@ export const climbingSessionsRelations = relations(
       fields: [climbingSessions.userId],
       references: [users.id],
     }),
-    climbGrades: many(climbGrades),
+    climbs: many(climbs),
   })
 );
 

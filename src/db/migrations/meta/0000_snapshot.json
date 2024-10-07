@@ -1,5 +1,5 @@
 {
-  "id": "47a61087-af8b-4b33-ba05-c513425ef9a1",
+  "id": "6953c82e-82be-4cc7-a19f-6afa67037ef3",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -102,55 +102,6 @@
       },
       "uniqueConstraints": {}
     },
-    "public.climb_grades": {
-      "name": "climb_grades",
-      "schema": "",
-      "columns": {
-        "climb_id": {
-          "name": "climb_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "grade_id": {
-          "name": "grade_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "climb_grades_climb_id_climbing_session_id_fk": {
-          "name": "climb_grades_climb_id_climbing_session_id_fk",
-          "tableFrom": "climb_grades",
-          "tableTo": "climbing_session",
-          "columnsFrom": [
-            "climb_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "climb_grades_grade_id_grade_id_fk": {
-          "name": "climb_grades_grade_id_grade_id_fk",
-          "tableFrom": "climb_grades",
-          "tableTo": "grade",
-          "columnsFrom": [
-            "grade_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
-    },
     "public.climbing_session": {
       "name": "climbing_session",
       "schema": "",
@@ -190,6 +141,55 @@
           "tableTo": "user",
           "columnsFrom": [
             "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.climbs": {
+      "name": "climbs",
+      "schema": "",
+      "columns": {
+        "climb_id": {
+          "name": "climb_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "grade_id": {
+          "name": "grade_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "climbs_climb_id_climbing_session_id_fk": {
+          "name": "climbs_climb_id_climbing_session_id_fk",
+          "tableFrom": "climbs",
+          "tableTo": "climbing_session",
+          "columnsFrom": [
+            "climb_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "climbs_grade_id_grade_id_fk": {
+          "name": "climbs_grade_id_grade_id_fk",
+          "tableFrom": "climbs",
+          "tableTo": "grade",
+          "columnsFrom": [
+            "grade_id"
           ],
           "columnsTo": [
             "id"

@@ -21,7 +21,7 @@ import {
 export default function CragClient() {
   const [selectedDay, setSelectedDay] = useState<Date | undefined>(undefined);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [climbGrades, setClimbGrades] = useState<string[]>([]);
+  const [climbs, setclimbs] = useState<string[]>([]);
   const [addError, setAddError] = useState<string | null>(null);
 
   const [lastResult, action] = useFormState(createClimbEntry, undefined);
@@ -50,11 +50,11 @@ export default function CragClient() {
 
     try {
       const grades = await getclimbingSessionsForDate(normalizedDay);
-      setClimbGrades(grades);
+      setclimbs(grades);
       setIsModalOpen(true);
     } catch (error) {
       console.error("Error fetching grades:", error);
-      setClimbGrades([]);
+      setclimbs([]);
       setAddError("Failed to fetch grades. Please try again.");
     }
   }, []);
@@ -114,11 +114,11 @@ export default function CragClient() {
           setIsModalOpen(open);
           if (!open) {
             setSelectedDay(undefined);
-            setClimbGrades([]);
+            setclimbs([]);
           }
         }}
         selectedDay={selectedDay}
-        climbGrades={climbGrades}
+        climbs={climbs}
         addError={addError}
         handleRemoveGrade={handleRemoveGrade}
         handleAddGrade={handleAddGrade}

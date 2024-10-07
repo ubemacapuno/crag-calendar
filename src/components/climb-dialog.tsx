@@ -25,7 +25,7 @@ interface ClimbDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   selectedDay: Date | undefined;
-  climbGrades: string[];
+  climbs: string[];
   addError: string | null;
   handleRemoveGrade: (grade: string) => Promise<void>;
   handleAddGrade: (event: React.FormEvent<HTMLFormElement>) => Promise<void>;
@@ -36,7 +36,7 @@ export function ClimbDialog({
   isOpen,
   onOpenChange,
   selectedDay,
-  climbGrades,
+  climbs,
   addError,
   handleRemoveGrade,
   handleAddGrade,
@@ -60,9 +60,9 @@ export function ClimbDialog({
               <>
                 <div className="mt-4">
                   <h3 className="mb-2 font-semibold">Logged Grades:</h3>
-                  {climbGrades.length > 0 ? (
+                  {climbs.length > 0 ? (
                     <ul className="space-y-2">
-                      {climbGrades.map((grade, index) => (
+                      {climbs.map((grade, index) => (
                         <li
                           key={index}
                           className="flex items-center justify-between"

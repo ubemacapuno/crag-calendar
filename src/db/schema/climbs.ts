@@ -4,8 +4,8 @@ import { pgTable, uuid } from "drizzle-orm/pg-core";
 import climbingSessions from "./climbing-sessions";
 import grades from "./grades";
 
-const climbGrades = pgTable(
-  "climb_grades",
+const climbs = pgTable(
+  "climbs",
   {
     climbId: uuid("climb_id")
       .notNull()
@@ -19,15 +19,15 @@ const climbGrades = pgTable(
   })
 );
 
-export const climbGradesRelations = relations(climbGrades, ({ one }) => ({
+export const climbsRelations = relations(climbs, ({ one }) => ({
   climb: one(climbingSessions, {
-    fields: [climbGrades.climbId],
+    fields: [climbs.climbId],
     references: [climbingSessions.id],
   }),
   grade: one(grades, {
-    fields: [climbGrades.gradeId],
+    fields: [climbs.gradeId],
     references: [grades.id],
   }),
 }));
 
-export default climbGrades;
+export default climbs;

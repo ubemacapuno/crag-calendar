@@ -9,10 +9,10 @@ import { getServerSession } from "next-auth";
 
 import options from "@/config/auth";
 import db from "@/db";
-import climbGrades from "@/db/schema/climb-grades";
 import climbingSessions, {
   SingleGradeInputSchema,
 } from "@/db/schema/climbing-sessions";
+import climbs from "@/db/schema/climbs";
 import grades, { vScaleBoulderingGrades } from "@/db/schema/grades";
 import requireAuth from "@/utils/require-auth";
 
@@ -30,8 +30,8 @@ export async function getclimbingSessionsForDate(date: Date) {
         gradeName: grades.name,
       })
       .from(climbingSessions)
-      .leftJoin(climbGrades, eq(climbingSessions.id, climbGrades.climbId))
-      .leftJoin(grades, eq(climbGrades.gradeId, grades.id))
+      .leftJoin(climbs, eq(climbingSessions.id, climbs.climbId))
+      .leftJoin(grades, eq(climbs.gradeId, grades.id))
       .where(
         and(
           eq(climbingSessions.userId, session.user.id),
@@ -83,11 +83,11 @@ export async function removeClimbGrade(date: Date, gradeName: string) {
 
       if (grade.length > 0) {
         await db
-          .delete(climbGrades)
+          .delete(climbs)
           .where(
             and(
-              eq(climbGrades.climbId, climb[0].id),
-              eq(climbGrades.gradeId, grade[0].id)
+              eq(climbs.climbId, climb[0].id),
+              eq(climbs.gradeId, grade[0].id)
             )
           );
       }
@@ -175,14 +175,14 @@ export async function createClimbEntry(prevState: unknown, formData: FormData) {
 
     // Finally, create the climb-grade association
     const insertClimbGradeResult = await db
-      .insert(climbGrades)
+      .insert(climbs)
       .values({
         climbId: climbId,
         gradeId: gradeId,
       })
       .returning({
-        climbId: climbGrades.climbId,
-        gradeId: climbGrades.gradeId,
+        climbId: climbs.climbId,
+        gradeId: climbs.gradeId,
       });
 
     console.log("Inserted climb grade:", insertClimbGradeResult);
@@ -198,20 +198,20 @@ export async function createClimbEntry(prevState: unknown, formData: FormData) {
   }
 }
 
-export async function getTotalLoggedGrades() {
+export async function getTotalLoggedClimbs() {
   await requireAuth();
   const session = (await getServerSession(options))!;
 
   try {
     const result = await db
       .select({ count: sql<number>`count(*)` })
-      .from(climbingSessions)
-      .leftJoin(climbGrades, eq(climbingSessions.id, climbGrades.climbId))
+      .from(climbs)
+      .leftJoin(climbingSessions, eq(climbingSessions.id, climbs.climbId))
       .where(eq(climbingSessions.userId, session.user.id));
 
     return result[0].count;
   } catch (error) {
-    console.error("Error fetching total logged grades:", error);
+    console.error("Error fetching total logged climbs:", error);
     return 0;
   }
 }
