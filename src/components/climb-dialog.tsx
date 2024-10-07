@@ -94,7 +94,7 @@ export function ClimbDialog({
                                   newDescription
                                 )
                               }
-                              onCancel={() => {}} // You can add any cancel logic here if needed
+                              onCancel={() => {}}
                             />
                           </div>
                           <Button
