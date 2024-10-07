@@ -13,16 +13,18 @@ CREATE TABLE IF NOT EXISTS "account" (
 	CONSTRAINT "account_provider_providerAccountId_pk" PRIMARY KEY("provider","providerAccountId")
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "climb_grades" (
-	"climb_id" uuid NOT NULL,
-	"grade_id" uuid NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "climb" (
+CREATE TABLE IF NOT EXISTS "climbing_session" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"userId" uuid NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"date" timestamp NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "climbs" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"climb_id" uuid NOT NULL,
+	"grade_id" uuid NOT NULL,
+	"description" text
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "grade" (
@@ -60,19 +62,19 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "climb_grades" ADD CONSTRAINT "climb_grades_climb_id_climb_id_fk" FOREIGN KEY ("climb_id") REFERENCES "public"."climb"("id") ON DELETE cascade ON UPDATE no action;
+ ALTER TABLE "climbing_session" ADD CONSTRAINT "climbing_session_userId_user_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "climb_grades" ADD CONSTRAINT "climb_grades_grade_id_grade_id_fk" FOREIGN KEY ("grade_id") REFERENCES "public"."grade"("id") ON DELETE cascade ON UPDATE no action;
+ ALTER TABLE "climbs" ADD CONSTRAINT "climbs_climb_id_climbing_session_id_fk" FOREIGN KEY ("climb_id") REFERENCES "public"."climbing_session"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "climb" ADD CONSTRAINT "climb_userId_user_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;
+ ALTER TABLE "climbs" ADD CONSTRAINT "climbs_grade_id_grade_id_fk" FOREIGN KEY ("grade_id") REFERENCES "public"."grade"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;

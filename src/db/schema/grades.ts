@@ -3,7 +3,7 @@ import { pgTable, uuid, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-import climbGrades from "./climb-grades";
+import climbs from "./climbs";
 
 export const vScaleBoulderingGrades = [
   "V0-",
@@ -34,7 +34,7 @@ const grades = pgTable("grade", {
 });
 
 export const gradesRelations = relations(grades, ({ many }) => ({
-  climbGrades: many(climbGrades),
+  climbs: many(climbs),
 }));
 
 export const InsertGradeSchema = createInsertSchema(grades, {

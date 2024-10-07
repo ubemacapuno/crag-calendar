@@ -1,10 +1,10 @@
 import { Mountain } from "lucide-react";
 
-import { getTotalLoggedGrades } from "@/app/dashboard/crag/actions";
+import { getTotalLoggedClimbs } from "@/app/dashboard/crag/actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function ClimbingStats() {
-  const totalGrades = await getTotalLoggedGrades();
+  const totalGrades = await getTotalLoggedClimbs();
 
   return (
     <Card className="w-full max-w-md">
@@ -14,7 +14,7 @@ export default async function ClimbingStats() {
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{totalGrades}</div>
-        <p className="text-xs text-muted-foreground">Total logged grades</p>
+        <p className="text-xs text-muted-foreground">Total logged climbs</p>
       </CardContent>
     </Card>
   );

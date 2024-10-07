@@ -1,37 +1,35 @@
 import { relations } from "drizzle-orm";
-import { pgTable, timestamp, uuid } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
+import { pgTable, text, uuid } from "drizzle-orm/pg-core";
 
-import climbGrades from "./climb-grades";
-import users from "./users";
+import climbingSessions from "./climbing-sessions";
+import grades from "./grades";
 
-const climbs = pgTable("climb", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  userId: uuid("userId")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
-  date: timestamp("date").notNull(),
-});
+const climbs = pgTable(
+  "climbs",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    climbId: uuid("climb_id")
+      .notNull()
+      .references(() => climbingSessions.id, { onDelete: "cascade" }),
+    gradeId: uuid("grade_id")
+      .notNull()
+      .references(() => grades.id, { onDelete: "cascade" }),
+    description: text("description"),
+  },
+  (t) => ({
+    pk: { columns: [t.climbId, t.gradeId] },
+  })
+);
 
-export const climbsRelations = relations(climbs, ({ one, many }) => ({
-  user: one(users, {
-    fields: [climbs.userId],
-    references: [users.id],
+export const climbsRelations = relations(climbs, ({ one }) => ({
+  climb: one(climbingSessions, {
+    fields: [climbs.climbId],
+    references: [climbingSessions.id],
   }),
-  climbGrades: many(climbGrades),
+  grade: one(grades, {
+    fields: [climbs.gradeId],
+    references: [grades.id],
+  }),
 }));
-
-export const InsertClimbSchema = createInsertSchema(climbs).omit({
-  id: true,
-  userId: true,
-  createdAt: true,
-});
-
-export const SingleGradeInputSchema = z.object({
-  grade: z.string(),
-  date: z.string().transform((str) => new Date(str)),
-});
 
 export default climbs;
