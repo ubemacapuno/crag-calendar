@@ -4,17 +4,19 @@ import { revalidatePath } from "next/cache";
 
 import { parseWithZod } from "@conform-to/zod";
 import { endOfDay, startOfDay } from "date-fns";
-import { and, eq, gte, lte } from "drizzle-orm";
+import { and, eq, gte, lte, sql } from "drizzle-orm";
 import { getServerSession } from "next-auth";
 
 import options from "@/config/auth";
 import db from "@/db";
 import climbGrades from "@/db/schema/climb-grades";
-import climbs, { SingleGradeInputSchema } from "@/db/schema/climbs";
+import climbingSessions, {
+  SingleGradeInputSchema,
+} from "@/db/schema/climbing-sessions";
 import grades, { vScaleBoulderingGrades } from "@/db/schema/grades";
 import requireAuth from "@/utils/require-auth";
 
-export async function getClimbsForDate(date: Date) {
+export async function getclimbingSessionsForDate(date: Date) {
   await requireAuth();
   const session = (await getServerSession(options))!;
 
@@ -24,17 +26,17 @@ export async function getClimbsForDate(date: Date) {
   try {
     const result = await db
       .select({
-        climbId: climbs.id,
+        climbId: climbingSessions.id,
         gradeName: grades.name,
       })
-      .from(climbs)
-      .leftJoin(climbGrades, eq(climbs.id, climbGrades.climbId))
+      .from(climbingSessions)
+      .leftJoin(climbGrades, eq(climbingSessions.id, climbGrades.climbId))
       .leftJoin(grades, eq(climbGrades.gradeId, grades.id))
       .where(
         and(
-          eq(climbs.userId, session.user.id),
-          gte(climbs.date, dayStart),
-          lte(climbs.date, dayEnd)
+          eq(climbingSessions.userId, session.user.id),
+          gte(climbingSessions.date, dayStart),
+          lte(climbingSessions.date, dayEnd)
         )
       );
 
@@ -49,7 +51,7 @@ export async function getClimbsForDate(date: Date) {
         vScaleBoulderingGrades.indexOf(b as any)
     );
   } catch (error) {
-    console.error("Error fetching climbs:", error);
+    console.error("Error fetching climbingSessions:", error);
     return [];
   }
 }
@@ -62,10 +64,13 @@ export async function removeClimbGrade(date: Date, gradeName: string) {
 
   try {
     const climb = await db
-      .select({ id: climbs.id })
-      .from(climbs)
+      .select({ id: climbingSessions.id })
+      .from(climbingSessions)
       .where(
-        and(eq(climbs.userId, session.user.id), eq(climbs.date, startOfDay))
+        and(
+          eq(climbingSessions.userId, session.user.id),
+          eq(climbingSessions.date, startOfDay)
+        )
       )
       .limit(1);
 
@@ -141,9 +146,14 @@ export async function createClimbEntry(prevState: unknown, formData: FormData) {
 
     // Now, find or create the climb
     const existingClimb = await db
-      .select({ id: climbs.id })
-      .from(climbs)
-      .where(and(eq(climbs.userId, session.user.id), eq(climbs.date, date)))
+      .select({ id: climbingSessions.id })
+      .from(climbingSessions)
+      .where(
+        and(
+          eq(climbingSessions.userId, session.user.id),
+          eq(climbingSessions.date, date)
+        )
+      )
       .limit(1);
 
     let climbId: string;
@@ -153,12 +163,12 @@ export async function createClimbEntry(prevState: unknown, formData: FormData) {
       console.log("Using existing climb:", climbId);
     } else {
       const insertClimbResult = await db
-        .insert(climbs)
+        .insert(climbingSessions)
         .values({
           userId: session.user.id,
           date: date,
         })
-        .returning({ id: climbs.id });
+        .returning({ id: climbingSessions.id });
       climbId = insertClimbResult[0].id;
       console.log("Created new climb:", climbId);
     }
@@ -195,9 +205,9 @@ export async function getTotalLoggedGrades() {
   try {
     const result = await db
       .select({ count: sql<number>`count(*)` })
-      .from(climbs)
-      .leftJoin(climbGrades, eq(climbs.id, climbGrades.climbId))
-      .where(eq(climbs.userId, session.user.id));
+      .from(climbingSessions)
+      .leftJoin(climbGrades, eq(climbingSessions.id, climbGrades.climbId))
+      .where(eq(climbingSessions.userId, session.user.id));
 
     return result[0].count;
   } catch (error) {

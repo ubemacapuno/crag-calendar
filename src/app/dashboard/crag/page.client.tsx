@@ -10,11 +10,11 @@ import { useFormState } from "react-dom";
 
 import { ClimbDialog } from "@/components/climb-dialog";
 import { Calendar } from "@/components/ui/calendar";
-import { InsertClimbSchema } from "@/db/schema/climbs";
+import { InsertClimbingSessionSchema } from "@/db/schema/climbing-sessions";
 
 import {
   createClimbEntry,
-  getClimbsForDate,
+  getclimbingSessionsForDate,
   removeClimbGrade,
 } from "./actions";
 
@@ -28,7 +28,7 @@ export default function CragClient() {
   const [form, fields] = useForm({
     lastResult,
     onValidate({ formData }) {
-      return parseWithZod(formData, { schema: InsertClimbSchema });
+      return parseWithZod(formData, { schema: InsertClimbingSessionSchema });
     },
     shouldValidate: "onBlur",
     shouldRevalidate: "onInput",
@@ -49,7 +49,7 @@ export default function CragClient() {
     setAddError(null);
 
     try {
-      const grades = await getClimbsForDate(normalizedDay);
+      const grades = await getclimbingSessionsForDate(normalizedDay);
       setClimbGrades(grades);
       setIsModalOpen(true);
     } catch (error) {

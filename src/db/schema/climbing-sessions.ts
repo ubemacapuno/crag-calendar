@@ -6,7 +6,7 @@ import { z } from "zod";
 import climbGrades from "./climb-grades";
 import users from "./users";
 
-const climbs = pgTable("climb", {
+const climbingSessions = pgTable("climbing_session", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("userId")
     .notNull()
@@ -15,15 +15,20 @@ const climbs = pgTable("climb", {
   date: timestamp("date").notNull(),
 });
 
-export const climbsRelations = relations(climbs, ({ one, many }) => ({
-  user: one(users, {
-    fields: [climbs.userId],
-    references: [users.id],
-  }),
-  climbGrades: many(climbGrades),
-}));
+export const climbingSessionsRelations = relations(
+  climbingSessions,
+  ({ one, many }) => ({
+    user: one(users, {
+      fields: [climbingSessions.userId],
+      references: [users.id],
+    }),
+    climbGrades: many(climbGrades),
+  })
+);
 
-export const InsertClimbSchema = createInsertSchema(climbs).omit({
+export const InsertClimbingSessionSchema = createInsertSchema(
+  climbingSessions
+).omit({
   id: true,
   userId: true,
   createdAt: true,
@@ -34,4 +39,4 @@ export const SingleGradeInputSchema = z.object({
   date: z.string().transform((str) => new Date(str)),
 });
 
-export default climbs;
+export default climbingSessions;

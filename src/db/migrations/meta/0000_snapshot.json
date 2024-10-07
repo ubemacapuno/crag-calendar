@@ -1,5 +1,5 @@
 {
-  "id": "20609569-8d32-4109-b29c-c61cc48e2177",
+  "id": "47a61087-af8b-4b33-ba05-c513425ef9a1",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -121,10 +121,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "climb_grades_climb_id_climb_id_fk": {
-          "name": "climb_grades_climb_id_climb_id_fk",
+        "climb_grades_climb_id_climbing_session_id_fk": {
+          "name": "climb_grades_climb_id_climbing_session_id_fk",
           "tableFrom": "climb_grades",
-          "tableTo": "climb",
+          "tableTo": "climbing_session",
           "columnsFrom": [
             "climb_id"
           ],
@@ -151,8 +151,8 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "public.climb": {
-      "name": "climb",
+    "public.climbing_session": {
+      "name": "climbing_session",
       "schema": "",
       "columns": {
         "id": {
@@ -184,9 +184,9 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "climb_userId_user_id_fk": {
-          "name": "climb_userId_user_id_fk",
-          "tableFrom": "climb",
+        "climbing_session_userId_user_id_fk": {
+          "name": "climbing_session_userId_user_id_fk",
+          "tableFrom": "climbing_session",
           "tableTo": "user",
           "columnsFrom": [
             "userId"

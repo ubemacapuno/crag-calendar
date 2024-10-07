@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS "climb_grades" (
 	"grade_id" uuid NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "climb" (
+CREATE TABLE IF NOT EXISTS "climbing_session" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"userId" uuid NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
@@ -60,7 +60,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "climb_grades" ADD CONSTRAINT "climb_grades_climb_id_climb_id_fk" FOREIGN KEY ("climb_id") REFERENCES "public"."climb"("id") ON DELETE cascade ON UPDATE no action;
+ ALTER TABLE "climb_grades" ADD CONSTRAINT "climb_grades_climb_id_climbing_session_id_fk" FOREIGN KEY ("climb_id") REFERENCES "public"."climbing_session"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -72,7 +72,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "climb" ADD CONSTRAINT "climb_userId_user_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;
+ ALTER TABLE "climbing_session" ADD CONSTRAINT "climbing_session_userId_user_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
