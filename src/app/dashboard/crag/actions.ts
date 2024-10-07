@@ -187,3 +187,21 @@ export async function createClimbEntry(prevState: unknown, formData: FormData) {
     };
   }
 }
+
+export async function getTotalLoggedGrades() {
+  await requireAuth();
+  const session = (await getServerSession(options))!;
+
+  try {
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(climbs)
+      .leftJoin(climbGrades, eq(climbs.id, climbGrades.climbId))
+      .where(eq(climbs.userId, session.user.id));
+
+    return result[0].count;
+  } catch (error) {
+    console.error("Error fetching total logged grades:", error);
+    return 0;
+  }
+}
