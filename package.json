@@ -12,7 +12,7 @@
     "studio": "cross-env drizzle-kit studio"
   },
   "dependencies": {
-    "@auth/drizzle-adapter": "^1.5.3",
+    "@auth/drizzle-adapter": "^1.6.1",
     "@conform-to/react": "^1.2.2",
     "@conform-to/zod": "^1.2.2",
     "@hookform/resolvers": "^3.9.0",
@@ -32,8 +32,8 @@
     "dotenv-expand": "^11.0.6",
     "drizzle-orm": "^0.33.0",
     "drizzle-zod": "^0.5.1",
-    "framer-motion": "^11.9.0",
-    "jiti": "^1.21.6",
+    "framer-motion": "^11.11.1",
+    "jiti": "^2.3.1",
     "lucide-react": "^0.447.0",
     "next": "14.2.14",
     "next-auth": "^4.24.8",
@@ -43,7 +43,7 @@
     "react-day-picker": "^8.10.1",
     "react-dom": "^18",
     "react-hook-form": "^7.53.0",
-    "tailwind-merge": "^2.5.2",
+    "tailwind-merge": "^2.5.3",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^3.23.8"
   },

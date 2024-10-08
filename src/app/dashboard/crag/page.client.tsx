@@ -16,6 +16,7 @@ import {
   getclimbingSessionsForDate,
   removeClimbGrade,
   updateClimbDescription,
+  updateClimbGrade,
 } from "./actions";
 
 // TODO: Remove logs when done debugging
@@ -128,6 +129,16 @@ export default function CragClient() {
     }
   };
 
+  const handleUpdateGrade = async (climbId: string, newGrade: string) => {
+    try {
+      await updateClimbGrade(climbId, newGrade);
+      await handleDayClick(selectedDay); // Refetch climbs after update
+    } catch (error) {
+      console.error("Error updating grade:", error);
+      setAddError("Failed to update grade. Please try again.");
+    }
+  };
+
   return (
     <div className="flex flex-col items-center justify-center p-4">
       <Calendar
@@ -155,6 +166,7 @@ export default function CragClient() {
         handleUpdateDescription={handleUpdateDescription}
         formId={form.id}
         isSubmitting={isSubmitting}
+        handleUpdateGrade={handleUpdateGrade} // Add this line
       />
     </div>
   );

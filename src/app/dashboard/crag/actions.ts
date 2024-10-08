@@ -222,3 +222,38 @@ export async function updateClimbDescription(
     throw error;
   }
 }
+
+export async function updateClimbGrade(climbId: string, newGrade: string) {
+  await requireAuth();
+
+  try {
+    // Find or create the grade
+    let gradeId: string;
+    const existingGrade = await db
+      .select({ id: grades.id })
+      .from(grades)
+      .where(eq(grades.name, newGrade))
+      .limit(1);
+
+    if (existingGrade.length > 0) {
+      gradeId = existingGrade[0].id;
+    } else {
+      const insertGradeResult = await db
+        .insert(grades)
+        .values({ name: newGrade })
+        .returning({ id: grades.id });
+      gradeId = insertGradeResult[0].id;
+    }
+
+    // Update the climb with the new grade
+    await db
+      .update(climbs)
+      .set({ gradeId: gradeId })
+      .where(eq(climbs.id, climbId));
+
+    revalidatePath("/dashboard/crag");
+  } catch (error) {
+    console.error("Error updating climb grade:", error);
+    throw error;
+  }
+}

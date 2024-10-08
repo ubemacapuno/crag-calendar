@@ -1,10 +1,29 @@
 "use client";
 
+import { useState } from "react";
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { vScaleBoulderingGrades } from "@/db/schema/grades";
+
 interface GradeCircleProps {
   grade: string;
+  isEditable?: boolean;
+  onGradeChange?: (newGrade: string) => Promise<void>;
 }
 
-export function GradeCircle({ grade }: GradeCircleProps) {
+export function GradeCircle({
+  grade,
+  isEditable = false,
+  onGradeChange,
+}: GradeCircleProps) {
+  const [isEditing, setIsEditing] = useState(false);
+
   const getColorComponents = (grade: string) => {
     const match = grade.match(/V(\d+)([-+])?/);
     let value = 0;
@@ -25,18 +44,41 @@ export function GradeCircle({ grade }: GradeCircleProps) {
 
   const { r, g, b } = getColorComponents(grade);
   const backgroundColor = `rgb(${r}, ${g}, ${b})`;
-
-  // Calculate text color based on background brightness
   const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b; // per ITU-R BT.709
   const textColor = luma < 128 ? "white" : "black";
 
+  const handleGradeChange = async (newGrade: string) => {
+    if (onGradeChange) {
+      await onGradeChange(newGrade);
+      setIsEditing(false);
+    }
+  };
+
+  if (isEditable && isEditing) {
+    return (
+      <Select onValueChange={handleGradeChange} defaultValue={grade}>
+        <SelectTrigger className="w-[80px]">
+          <SelectValue placeholder="Select grade" />
+        </SelectTrigger>
+        <SelectContent>
+          {vScaleBoulderingGrades.map((vGrade) => (
+            <SelectItem key={vGrade} value={vGrade}>
+              {vGrade}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    );
+  }
+
   return (
     <div
-      className="inline-flex h-8 w-8 items-center justify-center rounded-full text-xs"
+      className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-xs"
       style={{
         backgroundColor,
         color: textColor,
       }}
+      onClick={() => isEditable && setIsEditing(true)}
     >
       {grade}
     </div>
