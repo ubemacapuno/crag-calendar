@@ -37,6 +37,7 @@ interface ClimbDialogProps {
   formId: string;
   handleUpdateDescription: (climbId: string, newDescription: string) => void;
   isSubmitting: boolean;
+  handleUpdateGrade: (climbId: string, newGrade: string) => Promise<void>;
 }
 
 export function ClimbDialog({
@@ -50,6 +51,7 @@ export function ClimbDialog({
   formId,
   handleUpdateDescription,
   isSubmitting,
+  handleUpdateGrade,
 }: ClimbDialogProps) {
   const today = new Date();
   const [selectedGrade, setSelectedGrade] = useState<string>("V0-");
@@ -76,7 +78,7 @@ export function ClimbDialog({
             ) : (
               <>
                 <div className="mt-4">
-                  <h3 className="mb-2 font-semibold">Logged Grades:</h3>
+                  <h3 className="mb-2 font-semibold">Logged Climbs:</h3>
                   {climbs.length > 0 ? (
                     <ul className="space-y-2">
                       {climbs.map((climb) => (
@@ -85,7 +87,13 @@ export function ClimbDialog({
                           className="flex items-center justify-between"
                         >
                           <div className="flex items-center">
-                            <GradeCircle grade={climb.gradeName} />
+                            <GradeCircle
+                              grade={climb.gradeName}
+                              isEditable={true}
+                              onGradeChange={(newGrade) =>
+                                handleUpdateGrade(climb.id, newGrade)
+                              }
+                            />
                             <EditableDescription
                               initialDescription={climb.description}
                               onSave={(newDescription) =>
