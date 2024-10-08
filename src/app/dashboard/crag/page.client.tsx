@@ -166,7 +166,7 @@ export default function CragClient() {
         handleUpdateDescription={handleUpdateDescription}
         formId={form.id}
         isSubmitting={isSubmitting}
-        handleUpdateGrade={handleUpdateGrade} // Add this line
+        handleUpdateGrade={handleUpdateGrade}
       />
     </div>
   );
