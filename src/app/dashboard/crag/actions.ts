@@ -1,7 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-
 import { parseWithZod } from "@conform-to/zod";
 import { endOfDay, startOfDay } from "date-fns";
 import { and, eq, gte, lte, sql } from "drizzle-orm";
@@ -75,8 +73,6 @@ export async function removeClimbGrade(date: Date, climbId: string) {
 
   try {
     await db.delete(climbs).where(eq(climbs.id, climbId));
-
-    revalidatePath("/dashboard/crag");
   } catch (error) {
     console.error("Error removing climb grade:", error);
     throw error;
@@ -175,7 +171,6 @@ export async function createClimbEntry(prevState: unknown, formData: FormData) {
     const newClimb = insertClimbResult[0];
     console.log("New climb created:", newClimb);
 
-    revalidatePath("/dashboard/crag");
     return { status: "success", data: newClimb };
   } catch (error) {
     console.error("Error in createClimbEntry:", error);
@@ -215,8 +210,6 @@ export async function updateClimbDescription(
       .update(climbs)
       .set({ description: newDescription })
       .where(eq(climbs.id, climbId));
-
-    revalidatePath("/dashboard/crag");
   } catch (error) {
     console.error("Error updating climb description:", error);
     throw error;
@@ -250,8 +243,6 @@ export async function updateClimbGrade(climbId: string, newGrade: string) {
       .update(climbs)
       .set({ gradeId: gradeId })
       .where(eq(climbs.id, climbId));
-
-    revalidatePath("/dashboard/crag");
   } catch (error) {
     console.error("Error updating climb grade:", error);
     throw error;
