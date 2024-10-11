@@ -67,7 +67,6 @@ export async function getclimbingSessionsForDate(date: Date) {
 
 export async function removeClimbGrade(date: Date, climbId: string) {
   await requireAuth();
-  const session = (await getServerSession(options))!;
   const startOfDay = new Date(date);
   startOfDay.setHours(0, 0, 0, 0);
 
