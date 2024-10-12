@@ -11,7 +11,7 @@ import climbingSessions, {
   SingleGradeInputSchema,
 } from "@/db/schema/climbing-sessions";
 import climbs from "@/db/schema/climbs";
-import grades, { vScaleBoulderingGrades } from "@/db/schema/grades";
+import grades from "@/db/schema/grades";
 import requireAuth from "@/utils/require-auth";
 
 // TODO: Remove logs when done debugging
@@ -23,8 +23,6 @@ export async function getclimbingSessionsForDate(date: Date) {
   const dayStart = startOfDay(date);
   const dayEnd = endOfDay(date);
 
-  console.log("Fetching climbs for date:", date);
-
   try {
     const result = await db
       .select({
@@ -32,6 +30,7 @@ export async function getclimbingSessionsForDate(date: Date) {
         climbId: climbingSessions.id,
         gradeName: grades.name,
         description: climbs.description,
+        attempts: climbs.attempts, // Ensure attempts is included
       })
       .from(climbingSessions)
       .leftJoin(climbs, eq(climbingSessions.id, climbs.climbId))
@@ -44,24 +43,10 @@ export async function getclimbingSessionsForDate(date: Date) {
         )
       );
 
-    console.log("Raw fetched climbs:", result);
-
-    const filteredResult = result.filter((r) => r.gradeName);
-    console.log("Filtered climbs:", filteredResult);
-
-    return filteredResult.sort((a, b) => {
-      const gradeComparison =
-        vScaleBoulderingGrades.indexOf(a.gradeName as any) -
-        vScaleBoulderingGrades.indexOf(b.gradeName as any);
-      if (gradeComparison === 0) {
-        // If grades are the same, sort by description
-        return (a.description || "").localeCompare(b.description || "");
-      }
-      return gradeComparison;
-    });
+    return result; // Ensure this returns the climbs with attempts
   } catch (error) {
-    console.error("Error fetching climbingSessions:", error);
-    return [];
+    console.error("Error fetching climbs:", error);
+    throw error;
   }
 }
 
@@ -96,7 +81,7 @@ export async function createClimbEntry(prevState: unknown, formData: FormData) {
     return submission.reply();
   }
 
-  const { date, grade, description } = submission.value;
+  const { date, grade, description, attempts } = submission.value;
 
   if (!grade || grade === "undefined") {
     return {
@@ -105,7 +90,7 @@ export async function createClimbEntry(prevState: unknown, formData: FormData) {
     };
   }
 
-  console.log("Parsed submission:", { date, grade, description });
+  console.log("Parsed submission:", { date, grade, description, attempts });
 
   try {
     // Find or create the grade
@@ -159,12 +144,14 @@ export async function createClimbEntry(prevState: unknown, formData: FormData) {
         climbId: climbingSessionId,
         gradeId: gradeId,
         description: description || null,
+        attempts: attempts || 1,
       })
       .returning({
         id: climbs.id,
         climbId: climbs.climbId,
         gradeId: climbs.gradeId,
         description: climbs.description,
+        attempts: climbs.attempts,
       });
 
     const newClimb = insertClimbResult[0];
@@ -244,6 +231,24 @@ export async function updateClimbGrade(climbId: string, newGrade: string) {
       .where(eq(climbs.id, climbId));
   } catch (error) {
     console.error("Error updating climb grade:", error);
+    throw error;
+  }
+}
+
+// Function to update the attempts for a specific climb
+export async function updateClimbAttempts(
+  climbId: string,
+  newAttempts: number
+) {
+  await requireAuth();
+
+  try {
+    await db
+      .update(climbs)
+      .set({ attempts: newAttempts })
+      .where(eq(climbs.id, climbId));
+  } catch (error) {
+    console.error("Error updating climb attempts:", error);
     throw error;
   }
 }

@@ -38,6 +38,7 @@ export const SingleGradeInputSchema = z.object({
   date: z.coerce.date(),
   grade: z.string(),
   description: z.string().optional(),
+  attempts: z.number().gte(1).default(1),
 });
 
 export default climbingSessions;

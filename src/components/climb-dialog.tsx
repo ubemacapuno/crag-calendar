@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { format } from "date-fns";
 import { Trash2 } from "lucide-react";
 
+import { updateClimbAttempts } from "@/app/dashboard/crag/actions";
 import { AlertDestructive } from "@/components/alert-destructive";
 import { EditableDescription } from "@/components/editable-description";
 import { GradeCircle } from "@/components/grade-circle";
@@ -22,17 +23,25 @@ import {
 } from "@/components/ui/select";
 import { vScaleBoulderingGrades } from "@/db/schema/grades";
 
+import { EditableAttempts } from "./editable-attempts";
+
 interface ClimbDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   selectedDay: Date | undefined;
-  climbs: Array<{ id: string; gradeName: string; description: string | null }>;
+  climbs: Array<{
+    id: string;
+    gradeName: string;
+    description: string | null;
+    attempts: number;
+  }>;
   addError: string | null;
   handleRemoveGrade: (climbId: string) => Promise<void>;
   handleAddGrade: (
     event: React.FormEvent<HTMLFormElement>,
     grade: string,
-    description: string
+    description: string,
+    attempts: number
   ) => Promise<void>;
   formId: string;
   handleUpdateDescription: (climbId: string, newDescription: string) => void;
@@ -56,10 +65,23 @@ export function ClimbDialog({
   const today = new Date();
   const [selectedGrade, setSelectedGrade] = useState<string>("V0-");
   const [description, setDescription] = useState<string>("");
+  const [attempts, setAttempts] = useState<number>(1);
+
+  // Add the function to update attempts
+  const handleUpdateAttempts = async (climbId: string, newAttempts: number) => {
+    try {
+      // Call the API or function to update the attempts in the database
+      await updateClimbAttempts(climbId, newAttempts); // Ensure this function is implemented
+      // Optionally, you can refetch climbs or update local state here
+    } catch (error) {
+      console.error("Error updating attempts:", error);
+      // Handle error (e.g., show a message)
+    }
+  };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    handleAddGrade(event, selectedGrade, description);
+    handleAddGrade(event, selectedGrade, description, attempts); // Pass attempts here
     setDescription(""); // Clear description after submission
   };
 
@@ -104,6 +126,13 @@ export function ClimbDialog({
                               }
                               onCancel={() => {}}
                             />
+                            <EditableAttempts
+                              initialAttempts={climb.attempts}
+                              onSave={(newAttempts) =>
+                                handleUpdateAttempts(climb.id, newAttempts)
+                              }
+                              onCancel={() => {}}
+                            />
                           </div>
                           <Button
                             variant="ghost"
@@ -140,6 +169,14 @@ export function ClimbDialog({
                       ))}
                     </SelectContent>
                   </Select>
+                  <input
+                    type="number"
+                    value={attempts}
+                    onChange={(e) => setAttempts(Number(e.target.value))}
+                    min={1}
+                    max={99}
+                    className="rounded-md border p-2"
+                  />
                   <input
                     type="text"
                     value={description}

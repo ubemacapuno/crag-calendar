@@ -93,7 +93,8 @@ export default function CragClient() {
   const handleAddGrade = async (
     event: React.FormEvent<HTMLFormElement>,
     grade: string,
-    description: string
+    description: string,
+    attempts: number
   ) => {
     event.preventDefault();
     if (isSubmitting) return;
@@ -110,6 +111,7 @@ export default function CragClient() {
     formData.set("date", format(selectedDay, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"));
     formData.set("grade", grade);
     formData.set("description", description);
+    formData.set("attempts", attempts.toString());
 
     console.log("Submitting form data:", Object.fromEntries(formData));
 

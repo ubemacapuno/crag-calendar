@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { integer, pgTable, text, uuid } from "drizzle-orm/pg-core";
 
 import climbingSessions from "./climbing-sessions";
 import grades from "./grades";
@@ -15,6 +15,7 @@ const climbs = pgTable(
       .notNull()
       .references(() => grades.id, { onDelete: "cascade" }),
     description: text("description"),
+    attempts: integer("attempts").notNull().default(1),
   },
   (t) => ({
     pk: { columns: [t.climbId, t.gradeId] },

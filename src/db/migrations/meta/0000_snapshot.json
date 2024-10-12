@@ -1,5 +1,5 @@
 {
-  "id": "b3dc39b2-043a-4134-a936-fa173636ea54",
+  "id": "0486f131-bd40-480a-baf1-d1f9b4a6e9a9",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -180,6 +180,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
+        },
+        "attempts": {
+          "name": "attempts",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
         }
       },
       "indexes": {},
