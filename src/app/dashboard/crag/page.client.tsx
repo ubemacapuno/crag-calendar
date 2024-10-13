@@ -15,17 +15,27 @@ import {
   createClimbEntry,
   getclimbingSessionsForDate,
   removeClimbGrade,
+  updateClimbAttempts,
   updateClimbDescription,
   updateClimbGrade,
 } from "./actions";
 
 // TODO: Remove logs when done debugging
 
-export default function CragClient() {
+export default function CragClient({
+  onClimbsChange,
+}: {
+  onClimbsChange: () => void;
+}) {
   const [selectedDay, setSelectedDay] = useState<Date | undefined>(undefined);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [climbs, setClimbs] = useState<
-    Array<{ id: string; gradeName: string; description: string | null }>
+    Array<{
+      id: string;
+      gradeName: string;
+      description: string | null;
+      attempts: number;
+    }>
   >([]);
   const [addError, setAddError] = useState<string | null>(null);
 
@@ -56,11 +66,19 @@ export default function CragClient() {
     try {
       const climbData = await getclimbingSessionsForDate(normalizedDay);
       console.log("Fetched climb data:", climbData);
-      setClimbs(climbData);
+      setClimbs(
+        climbData.map((climb) => ({
+          id: climb.id || "",
+          gradeName: climb.gradeName || "",
+          description: climb.description || null,
+          attempts: climb.attempts || 0,
+        }))
+      );
       setIsModalOpen(true);
     } catch (error) {
       console.error("Error fetching grades:", error);
       setClimbs([]);
+      setIsModalOpen(false);
       setAddError("Failed to fetch grades. Please try again.");
     }
   }, []);
@@ -69,7 +87,8 @@ export default function CragClient() {
     if (selectedDay) {
       try {
         await removeClimbGrade(selectedDay, climbId);
-        await handleDayClick(selectedDay); // Refetch climbs after removal
+        await handleDayClick(selectedDay); // Fetch and display climbs for selectedDay
+        onClimbsChange(); // Update climbing stats after changes
       } catch (error) {
         console.error("Error removing grade:", error);
         setAddError("Failed to remove grade. Please try again.");
@@ -83,7 +102,7 @@ export default function CragClient() {
   ) => {
     try {
       await updateClimbDescription(climbId, newDescription);
-      await handleDayClick(selectedDay); // Refetch climbs after update
+      await handleDayClick(selectedDay); // Fetch and display climbs for selectedDay
     } catch (error) {
       console.error("Error updating description:", error);
       setAddError("Failed to update description. Please try again.");
@@ -93,7 +112,8 @@ export default function CragClient() {
   const handleAddGrade = async (
     event: React.FormEvent<HTMLFormElement>,
     grade: string,
-    description: string
+    description: string,
+    attempts: number
   ) => {
     event.preventDefault();
     if (isSubmitting) return;
@@ -110,6 +130,7 @@ export default function CragClient() {
     formData.set("date", format(selectedDay, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"));
     formData.set("grade", grade);
     formData.set("description", description);
+    formData.set("attempts", attempts.toString());
 
     console.log("Submitting form data:", Object.fromEntries(formData));
 
@@ -119,7 +140,8 @@ export default function CragClient() {
       if (result && result.status === "error") {
         setAddError(result.message);
       } else {
-        await handleDayClick(selectedDay); // Refetch climbs after addition
+        await handleDayClick(selectedDay); // Fetch and display climbs for selectedDay
+        onClimbsChange(); // Update climbing stats after changes
       }
     } catch (error) {
       console.error("Error adding grade:", error);
@@ -132,10 +154,22 @@ export default function CragClient() {
   const handleUpdateGrade = async (climbId: string, newGrade: string) => {
     try {
       await updateClimbGrade(climbId, newGrade);
-      await handleDayClick(selectedDay); // Refetch climbs after update
+      await handleDayClick(selectedDay); // Fetch and display climbs for selectedDay
+      onClimbsChange(); // Update climbing stats after changes
     } catch (error) {
       console.error("Error updating grade:", error);
       setAddError("Failed to update grade. Please try again.");
+    }
+  };
+
+  const handleUpdateAttempts = async (climbId: string, newAttempts: number) => {
+    try {
+      await updateClimbAttempts(climbId, newAttempts);
+      await handleDayClick(selectedDay); // Fetch and display climbs for selectedDay
+      onClimbsChange(); // Update climbing stats after changes
+    } catch (error) {
+      console.error("Error updating attempts:", error);
+      setAddError("Failed to update attempts. Please try again.");
     }
   };
 
@@ -167,6 +201,7 @@ export default function CragClient() {
         formId={form.id}
         isSubmitting={isSubmitting}
         handleUpdateGrade={handleUpdateGrade}
+        handleUpdateAttempts={handleUpdateAttempts}
       />
     </div>
   );

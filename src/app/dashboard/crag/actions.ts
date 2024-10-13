@@ -19,7 +19,6 @@ import requireAuth from "@/utils/require-auth";
 export async function getclimbingSessionsForDate(date: Date) {
   await requireAuth();
   const session = (await getServerSession(options))!;
-
   const dayStart = startOfDay(date);
   const dayEnd = endOfDay(date);
 
@@ -32,6 +31,7 @@ export async function getclimbingSessionsForDate(date: Date) {
         climbId: climbingSessions.id,
         gradeName: grades.name,
         description: climbs.description,
+        attempts: climbs.attempts,
       })
       .from(climbingSessions)
       .leftJoin(climbs, eq(climbingSessions.id, climbs.climbId))
@@ -46,9 +46,11 @@ export async function getclimbingSessionsForDate(date: Date) {
 
     console.log("Raw fetched climbs:", result);
 
+    // Filter out climbs without a grade
     const filteredResult = result.filter((r) => r.gradeName);
     console.log("Filtered climbs:", filteredResult);
 
+    // Sort climbs by grade and then by description
     return filteredResult.sort((a, b) => {
       const gradeComparison =
         vScaleBoulderingGrades.indexOf(a.gradeName as any) -
@@ -67,7 +69,6 @@ export async function getclimbingSessionsForDate(date: Date) {
 
 export async function removeClimbGrade(date: Date, climbId: string) {
   await requireAuth();
-  const session = (await getServerSession(options))!;
   const startOfDay = new Date(date);
   startOfDay.setHours(0, 0, 0, 0);
 
@@ -97,7 +98,7 @@ export async function createClimbEntry(prevState: unknown, formData: FormData) {
     return submission.reply();
   }
 
-  const { date, grade, description } = submission.value;
+  const { date, grade, description, attempts } = submission.value;
 
   if (!grade || grade === "undefined") {
     return {
@@ -106,7 +107,7 @@ export async function createClimbEntry(prevState: unknown, formData: FormData) {
     };
   }
 
-  console.log("Parsed submission:", { date, grade, description });
+  console.log("Parsed submission:", { date, grade, description, attempts });
 
   try {
     // Find or create the grade
@@ -160,12 +161,14 @@ export async function createClimbEntry(prevState: unknown, formData: FormData) {
         climbId: climbingSessionId,
         gradeId: gradeId,
         description: description || null,
+        attempts: attempts || 1,
       })
       .returning({
         id: climbs.id,
         climbId: climbs.climbId,
         gradeId: climbs.gradeId,
         description: climbs.description,
+        attempts: climbs.attempts,
       });
 
     const newClimb = insertClimbResult[0];
@@ -245,6 +248,24 @@ export async function updateClimbGrade(climbId: string, newGrade: string) {
       .where(eq(climbs.id, climbId));
   } catch (error) {
     console.error("Error updating climb grade:", error);
+    throw error;
+  }
+}
+
+// Function to update the attempts for a specific climb
+export async function updateClimbAttempts(
+  climbId: string,
+  newAttempts: number
+) {
+  await requireAuth();
+
+  try {
+    await db
+      .update(climbs)
+      .set({ attempts: newAttempts })
+      .where(eq(climbs.id, climbId));
+  } catch (error) {
+    console.error("Error updating climb attempts:", error);
     throw error;
   }
 }
