@@ -11,7 +11,7 @@ import climbingSessions, {
   SingleGradeInputSchema,
 } from "@/db/schema/climbing-sessions";
 import climbs from "@/db/schema/climbs";
-import grades from "@/db/schema/grades";
+import grades, { vScaleBoulderingGrades } from "@/db/schema/grades";
 import requireAuth from "@/utils/require-auth";
 
 // TODO: Remove logs when done debugging
@@ -19,9 +19,10 @@ import requireAuth from "@/utils/require-auth";
 export async function getclimbingSessionsForDate(date: Date) {
   await requireAuth();
   const session = (await getServerSession(options))!;
-
   const dayStart = startOfDay(date);
   const dayEnd = endOfDay(date);
+
+  console.log("Fetching climbs for date:", date);
 
   try {
     const result = await db
@@ -43,10 +44,26 @@ export async function getclimbingSessionsForDate(date: Date) {
         )
       );
 
-    return result; // Ensure this returns the climbs with attempts
+    console.log("Raw fetched climbs:", result);
+
+    // Filter out climbs without a grade
+    const filteredResult = result.filter((r) => r.gradeName);
+    console.log("Filtered climbs:", filteredResult);
+
+    // Sort climbs by grade and then by description
+    return filteredResult.sort((a, b) => {
+      const gradeComparison =
+        vScaleBoulderingGrades.indexOf(a.gradeName as any) -
+        vScaleBoulderingGrades.indexOf(b.gradeName as any);
+      if (gradeComparison === 0) {
+        // If grades are the same, sort by description
+        return (a.description || "").localeCompare(b.description || "");
+      }
+      return gradeComparison;
+    });
   } catch (error) {
-    console.error("Error fetching climbs:", error);
-    throw error;
+    console.error("Error fetching climbingSessions:", error);
+    return [];
   }
 }
 
