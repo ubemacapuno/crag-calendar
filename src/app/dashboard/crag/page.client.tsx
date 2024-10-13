@@ -88,7 +88,7 @@ export default function CragClient({
       try {
         await removeClimbGrade(selectedDay, climbId);
         await handleDayClick(selectedDay); // Fetch and display climbs for selectedDay
-        onClimbsChange();
+        onClimbsChange(); // Update climbing stats after changes
       } catch (error) {
         console.error("Error removing grade:", error);
         setAddError("Failed to remove grade. Please try again.");

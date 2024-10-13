@@ -31,7 +31,7 @@ export async function getclimbingSessionsForDate(date: Date) {
         climbId: climbingSessions.id,
         gradeName: grades.name,
         description: climbs.description,
-        attempts: climbs.attempts, // Ensure attempts is included
+        attempts: climbs.attempts,
       })
       .from(climbingSessions)
       .leftJoin(climbs, eq(climbingSessions.id, climbs.climbId))
