@@ -1,10 +1,31 @@
-# Next PG Starter
+# Crag Calendar
 
-A basic Next.js starter with Postgres.
+Track your bouldering climbs with Crag Calendar! Crag Calendar is your bouldering companion, designed to help climbers track their progress and celebrate their achievements. Its intuitive interface and powerful features make it the perfect tool to record your climbs.
 
-- [Next PG Starter](#next-start)
-  - [Stack](#stack)
-  - [Setup](#setup)
+> **Note:** This project is currently in active development. I'm building Crag Calendar in public to share my passion for climbing and app dev!
+
+## Key Features (In Development)
+
+ - Interactive Calendar: Click on a day to log your climbs on a day-to-day basis
+ - Detailed Climb Logging: Record essential information for each climb:
+     * Bouldering grade
+     * Description of the problem
+     * Number of attempts
+     * Climb completion
+ - User Authentication: Secure login to keep your climbing data private
+ - Progress Tracking: Visualize your improvement over time
+
+## Current Status
+
+Crag Calendar is in its early stages. Here's a rough overview of current MVP progress:
+
+- [x] Project setup and configuration
+- [x] Basic user authentication
+- [x] Interactive calendar implementation
+- [x] Climb logging functionality
+- [ ] Basic filtering for climbing data
+- [ ] User profile and settings
+- [ ] Data visualization for progress tracking
 
 ## Stack
 
@@ -87,3 +108,12 @@ pnpm run db:migrate
 ```sh
 pnpm run dev
 ```
+
+## Future Improvements
+Here are some exciting features I'd like to implement in the future:
+ - Tagging System: Add tags to your climbs for easy filtering and organization
+ - Expanded Grading Systems:
+     * Incorporate the Fontainebleau grading system for bouldering
+     * Add support for rope/route climbing grades
+
+
